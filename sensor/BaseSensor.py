@@ -41,14 +41,14 @@ class PTSensor(BaseSensor):
 
     def data_check_vaild(self,data):
         check_sum = data[-2] << 8 | data[-1]
-        print("check_sum = ", check_sum)
+        #print("check_sum = ", check_sum)
         new_check_sum = 0
         new_data = data[:-2]
-        print("new_data = ", len(new_data))
+        #print("new_data = ", len(new_data))
         for b in new_data:
             new_check_sum = new_check_sum + b
         new_check_sum = new_check_sum + self.DATA_PREFIX_1st + self.DATA_PREFIX_2nd
-        print("new_check_sum = ", new_check_sum)
+        #print("new_check_sum = ", new_check_sum)
         if new_check_sum == check_sum:
             return True
         else:
@@ -73,46 +73,31 @@ class PTSensor(BaseSensor):
         humi     = self.bytes2Int(data[24:26])
         newInfo = PTInfo()
         newInfo.info_set(pm1_0_sp, pm2_5_sp, pm10_sp, pm1_0_ae, pm2_5_ae, pm10_ae, p03um, p05um, p10um, p25um, temp, humi)
-        #print(newInfo.get_info())
-        in_json = json.dumps(newInfo.get_info())
-        print(in_json)
+        return newInfo
 
 
     def data_get(self):
         super().data_get()
+        self.__ser.flushInput()
         while True:
             recv =self.__ser.read(1)
             if recv == b'B':
                 recv =self.__ser.read(1)
                 if recv == b'M':
-                    print("get rest data")
+                    #print("get rest data")
                     length_recv =self.__ser.read(2)   # get data length
                     data_length = length_recv[0]<<8 | length_recv[1]
                     data_recv =self.__ser.read(data_length)   # get data length
                     new_data = length_recv + data_recv
                     if True == self.data_check_vaild(new_data) :
                         print("get valid data")
-                        self.data_parser(new_data)
+                        newinfo = self.data_parser(new_data)
+                        break
                     else:
                         print("get invalid data")
                 else:
                     continue
             else:
-                continue       
-            # 清空接收缓冲区  
-            #self.__ser.flushInput()  
-            # 必要的软件延时  
-            #time.sleep(0.1)  
-
- 
-
-
-    
-
-
-
-if __name__ == '__main__':
-    PM25 = PTSensor()
-    PM25.sensor_init()
-    PM25.data_get()
+                continue
+        return newinfo
 
