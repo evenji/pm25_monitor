@@ -1,0 +1,19 @@
+{
+	"config_version": "1.0",
+	"sampling_time": 5,
+	"sensor_config": {
+		"name": "PM2.5",
+		"model": "PMS5003T",
+		"manufacturer": "PlanTower",
+		"device_path": "/dev/ttyUSB0",
+		"buad_rate": 9600
+	},
+	"mqtt_config": {
+		"clientID": "PTPM25_1",
+		"username": "k5nahpt/PT_PM25_Sensor",
+		"passwd": "p6JDJ7MqixIq2GJ8",
+		"server": "k5nahpt.mqtt.iot.gz.baidubce.com",
+		"port": 1883,
+		"topic_upload_info": "$baidu/iot/shadow/PT_PM25_Sensor/update"
+	}
+}

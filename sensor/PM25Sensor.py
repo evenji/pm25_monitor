@@ -13,12 +13,9 @@ class BaseSensor(object):
         pass
     
     def sensor_init(self):
-        print("this is sensor init")
-
-    def data_get(self):
         pass
 
-    def config_set(self):
+    def data_get(self):
         pass
 
     def sensor_reset(self):
@@ -29,15 +26,18 @@ class PTSensor(BaseSensor):
     DATA_PREFIX_1st = 0x42
     DATA_PREFIX_2nd = 0x4d
 
+    def __init__(self, sensor_config):
+        self.__sensor_config = sensor_config
+
     def sensor_init(self):
-        super().sensor_init()
-        print("this is PM2.5 init")
-        #self.__ser = serial.Serial("/dev/ttyAMA0", 115200)
-        self.__ser = serial.Serial("/dev/ttyUSB0", 9600)
+        print("This is %s sensor init, model : %s, manufacturer: %s" % (self.__sensor_config['name'], self.__sensor_config['model'], self.__sensor_config['manufacturer']))        
+        device_path = self.__sensor_config['device_path']
+        buad_rate = self.__sensor_config['buad_rate']
+        self.__ser = serial.Serial(device_path, buad_rate)
         if self.__ser.isOpen():
-            print("open success")
+            return True
         else:
-            print("open success")
+            return False
 
     def data_check_vaild(self,data):
         check_sum = data[-2] << 8 | data[-1]
@@ -90,7 +90,7 @@ class PTSensor(BaseSensor):
                     data_recv =self.__ser.read(data_length)   # get data length
                     new_data = length_recv + data_recv
                     if True == self.data_check_vaild(new_data) :
-                        print("get valid data")
+                        #print("get valid data")
                         newinfo = self.data_parser(new_data)
                         break
                     else:

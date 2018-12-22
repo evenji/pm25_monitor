@@ -4,6 +4,7 @@
 import paho.mqtt.client as mqtt
 from enum import Enum
 import json
+import sys
 
 class MQTT_RETURN_VALUE(Enum):
     MRV_CONNECT_SUCCESS               = 0
@@ -15,31 +16,21 @@ class MQTT_RETURN_VALUE(Enum):
 
 class Mqtt_Client(object):
 
-    clientID = "PTPM25_1"
-    user = r"k5nahpt/PT_PM25_Sensor"
-    passwd  = "p6JDJ7MqixIq2GJ8"
-    server = "k5nahpt.mqtt.iot.gz.baidubce.com"
-    topic_upload_info = r"$baidu/iot/shadow/PT_PM25_Sensor/update"
-    port = 1883
-
-    def __init__(self, callback_on_connect):
+    def __init__(self, mqtt_config, callback_on_connect):
+        self.__mqtt_config = mqtt_config
         self.__callback_on_connect = callback_on_connect
         pass
     
-    def load_config(self):
-        pass
-    
     def connect_server(self):
-        self.__client = mqtt.Client(self.clientID)
-        self.__client.username_pw_set(self.user,self.passwd)
+        self.__client = mqtt.Client(self.__mqtt_config['clientID'])
+        self.__client.username_pw_set(self.__mqtt_config['username'],self.__mqtt_config['passwd'])
         self.__client.on_connect = self.on_connect
         self.__client.on_message = self.on_message
-        #self.__client.on_disconnect = self.on_disconnect
-        self.__client.connect(self.server, self.port, 60)
+        self.__client.connect(self.__mqtt_config['server'], self.__mqtt_config['port'], 60)
         self.__client.loop_forever()
 
     def on_connect(self, client, userdata, flags, rc):
-        print("Connected with result code "+str(rc))
+        #print("Connected with result code "+str(rc))
         if MQTT_RETURN_VALUE["MRV_CONNECT_SUCCESS"].value == rc:
             print("Connect MQTT Server Successfully!")
             self.__callback_on_connect()
@@ -54,6 +45,8 @@ class Mqtt_Client(object):
             print("Connect MQTT Sever Failed, invalid username or passwords!")
         elif MQTT_RETURN_VALUE["MRV_NO_AUTHORIZATION"].value == rc:
             print("Connect MQTT Sever Failed, no authorzation!")
+        if MQTT_RETURN_VALUE["MRV_CONNECT_SUCCESS"].value != rc:
+            sys.exit(1)
 
     def on_message(self, client, userdata, msg):
         print(msg.topic+" "+str(msg.payload))
@@ -67,7 +60,7 @@ class Mqtt_Client(object):
     def public_info(self, info):
         payload = self.package_info(info)
         print(payload)
-        self.__client.publish(self.topic_upload_info, payload)
+        self.__client.publish(self.__mqtt_config['topic_upload_info'], payload)
 
 
 '''    def on_disconnect(self, client, userdata, rc):
