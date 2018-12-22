@@ -4,6 +4,7 @@
 import serial  
 import time  
 import sys
+import json
 from SensorInfo import PTInfo
 
 
@@ -72,7 +73,9 @@ class PTSensor(BaseSensor):
         humi     = self.bytes2Int(data[24:26])
         newInfo = PTInfo()
         newInfo.info_set(pm1_0_sp, pm2_5_sp, pm10_sp, pm1_0_ae, pm2_5_ae, pm10_ae, p03um, p05um, p10um, p25um, temp, humi)
-        newInfo.print_info()
+        #print(newInfo.get_info())
+        in_json = json.dumps(newInfo.get_info())
+        print(in_json)
 
 
     def data_get(self):
